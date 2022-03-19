@@ -1,7 +1,40 @@
 package storage
 
-type Storage struct{}
+import (
+	"fmt"
+
+	"github.com/gadzhimagomedov81/storage/internal/file"
+	"github.com/google/uuid"
+)
+
+type Storage struct {
+	files map[uuid.UUID]*file.File
+}
 
 func NewStorage() *Storage {
-	return &Storage{}
+	return &Storage{
+		files: make(map[uuid.UUID]*file.File),
+	}
+}
+
+func (s *Storage) Upload(filename string, data []byte) (*file.File, error) {
+	newFile, err := file.NewFile(filename, data)
+
+	if err != nil {
+		return nil, err
+	}
+
+	s.files[newFile.ID] = newFile
+
+	return newFile, nil
+}
+
+func (s *Storage) GetById(fileID uuid.UUID) (*file.File, error) {
+	foundFile, ok := s.files[fileID]
+
+	if !ok {
+		return nil, fmt.Errorf("File %v not found", fileID)
+	}
+
+	return foundFile, nil
 }
